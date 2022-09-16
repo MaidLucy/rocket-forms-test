@@ -1,0 +1,16 @@
+{% extends "base" %}
+
+{% block content %}
+<p>Submit a message here: </p>
+<form method="post">
+  <div class="mb-3">
+    <label for="message" class="form-label">Message</label>
+    <input type="text" class="form-control" id="message" name="message">
+  </div>
+  <div class="mb-3 form-check">
+    <input type="checkbox" class="form-check-input" id="important" name="important">
+    <label class="form-check-label" for="important">Important</label>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock content %}

@@ -1,0 +1,5 @@
+CREATE TABLE messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message VARCHAR NOT NULL,
+    important BOOLEAN DEFAULT false
+);
