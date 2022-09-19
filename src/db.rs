@@ -46,18 +46,51 @@ async fn message_submit(mut db: Connection<Db>, msg: Form<Message<'_>>) -> Resul
     Ok(Created::new("/messages").body("success"))
 }
 
-#[get("/messages")]
-async fn list_messages<'r>(mut db: Connection<Db>) -> Result<json::Json<Vec<DbMessage>>> {
+#[get("/messages/json")]
+async fn list_messages_json<'r>(mut db: Connection<Db>) -> Result<json::Json<Vec<DbMessage>>> {
     let query = sqlx::query_as!(DbMessage, "SELECT * FROM messages")
         .fetch_all(&mut *db).await?;
     Ok(json::Json(query))
 }
 
-#[get("/message/<id>")]
-async fn get_message<'r>(mut db: Connection<Db>, id: i64) -> Result<json::Json<DbMessage>> {
+#[get("/messages")]
+async fn list_messages(mut db: Connection<Db>) -> Template {
+    let query = sqlx::query_as!(DbMessage, "SELECT * FROM messages")
+        .fetch_all(&mut *db).await;
+
+    match query {
+        Ok(q) => Template::render("list_messages", context!{
+            title: "Messages",
+            messages: q,
+        }),
+        Err(e) => Template::render("error", context!{
+            title: "Error",
+            error: e.to_string(),
+        }),
+    }
+}
+
+#[get("/message/<id>/json")]
+async fn get_message_json<'r>(mut db: Connection<Db>, id: i64) -> Result<json::Json<DbMessage>> {
     let query = sqlx::query_as!(DbMessage, "SELECT * FROM messages WHERE id = ?", id)
         .fetch_one(&mut *db).await?;
     Ok(json::Json(query))
+}
+
+#[get("/message/<id>")]
+async fn get_message<'r>(mut db: Connection<Db>, id: i64) -> Template {
+    let query = sqlx::query_as!(DbMessage, "SELECT * FROM messages WHERE id = ?", id)
+        .fetch_one(&mut *db).await;
+    match query {
+        Ok(q) => Template::render("list_messages", context!{
+            title: "Message",
+            messages: [q],
+        }),
+        Err(e) => Template::render("error", context!{
+            title: "Error",
+            error: e.to_string(),
+        }),
+    }
 }
 
 async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
@@ -77,7 +110,14 @@ pub fn stage() -> AdHoc {
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket.attach(Db::init())
             .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
-            .mount("/db", routes![message_submit_form, message_submit, get_message, list_messages])
+            .mount("/db", routes![
+                   message_submit_form, 
+                   message_submit, 
+                   get_message, 
+                   get_message_json, 
+                   list_messages, 
+                   list_messages_json
+            ])
             .attach(Template::fairing())
     })
 }

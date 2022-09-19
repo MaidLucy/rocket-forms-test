@@ -1,0 +1,8 @@
+{% extends "base" %}
+
+{% block content %}
+
+<p><b>This is what went wrong: </b></p>
+{{ error }}
+
+{% endblock content %}

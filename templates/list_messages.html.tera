@@ -1,0 +1,13 @@
+{% extends "base" %}
+
+{% block content %}
+
+{% for message in messages %}
+<div class="card {% if message.important == true %} border-dark {% endif %} mb-3" style="max-width: 18rem;">
+  <div class="card-body {% if message.important == true %} text-dark {% endif %}">
+  {{ message.message }}
+  </div>
+</div>
+{% endfor %}
+
+{% endblock content %}
